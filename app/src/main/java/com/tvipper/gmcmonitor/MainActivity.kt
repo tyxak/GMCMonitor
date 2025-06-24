@@ -39,7 +39,6 @@ class MainActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
 
-            // WebView settings
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.useWideViewPort = true
@@ -48,16 +47,23 @@ class MainActivity : ComponentActivity() {
             settings.builtInZoomControls = false
             settings.displayZoomControls = false
 
-            // Tilføj brugeragent så PHP kan genkende appen
             val defaultUA = settings.userAgentString
             settings.userAgentString = "$defaultUA GMCApp"
 
             webViewClient = WebViewClient()
-            loadUrl("https://gmc.tvipper.com/index.php")
         }
 
         layout.addView(webView)
         setContentView(layout)
+
+        // App link: Åbn direkte link hvis tilgængeligt
+        val link = intent?.data?.toString()
+        if (link != null) {
+            Log.d("MainActivity", "App opened via App Link: $link")
+            webView.loadUrl(link)
+        } else {
+            webView.loadUrl("https://gmc.tvipper.com/index.php")
+        }
 
         // Tilladelser og baggrundsarbejde
         requestNotificationPermissionIfNeeded()
@@ -66,8 +72,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-
-        // Genindlæs hvis DNS fejlede under opstart
         webView.evaluateJavascript(
             "(function() { return document.body.innerText.includes('ERR_NAME_NOT_RESOLVED'); })();"
         ) { result ->
